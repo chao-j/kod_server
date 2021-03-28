@@ -10,18 +10,18 @@ router.get('/', function (req, res, next) {
 
 // 测试token生成
 router.post('/getToken', (req, res) => {
+  const { id, count } = req.body
   res.json({
     ...responseModel.SUCCESS.SUC_OK_DATA,
     data: {
       token: jsonwebtoken.sign(
         {
-          name: 'zcj',
-          count: '2516304799@qq.com',
-          uId: 'xxx1',
+          count,
+          id,
         },
         SERVER_CONFIG.tokenSecret,
         {
-          expiresIn: 60 * 2,
+          expiresIn: '10m',
         }
       ),
     },

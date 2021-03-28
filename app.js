@@ -6,7 +6,7 @@ const Jwt = require('express-jwt')
 
 const { SERVER_CONFIG } = require('./config/server_config')
 const responseModel = require('./utils/responseModel')
-
+const Debug = require('./utils/debug/debug')
 var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/users')
 
@@ -32,6 +32,7 @@ app.use(
 // token 校验 在所有路由之前
 app.use((err, req, res, next) => {
   if (err.name === 'UnauthorizedError') {
+    Debug.log(err, 'token错误: ')
     // 如果token无效，返回
     res.status(401).json({
       ...responseModel.FAIL.INVALID_TOKEN,
@@ -39,7 +40,9 @@ app.use((err, req, res, next) => {
     })
     return
   }
-  // 如果通过 刷新token
+  // 更新token方法
+  // 1.如果通过 刷新token, 客户端每次发现token更新，都存储一遍，但是这样明显太冗余
+  // 2.每次用户第一次打开app，主动请求刷新一次token
   // res.setHeader('x-kod-token', 'xxx')
   next()
 })

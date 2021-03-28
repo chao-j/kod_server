@@ -25,6 +25,11 @@ const responseModel = {
       code: 401,
       msg: 'token错误',
     },
+    // 参数错误
+    PARAM_ERR: {
+      code: 402,
+      msg: '参数错误',
+    },
   },
   // 请求或服务器内部造成错误 code = 5xxx  http = 500 | 401
   ERROR: {
@@ -35,6 +40,14 @@ const responseModel = {
     REQUEST_ERR: {
       code: 500,
       msg: '请求错误',
+    },
+    DB_INSERT: {
+      code: 501,
+      msg: '插入数据错误',
+    },
+    DB_QUERY: {
+      code: 502,
+      msg: '查询数据库错误',
     },
   },
 }
