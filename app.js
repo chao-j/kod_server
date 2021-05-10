@@ -4,11 +4,13 @@ var cookieParser = require('cookie-parser')
 var logger = require('morgan')
 const Jwt = require('express-jwt')
 
-const { SERVER_CONFIG } = require('./config/server_config')
+const { SERVER_CONFIG, ENV_TYPE } = require('./config/server_config')
 const responseModel = require('./utils/responseModel')
 const Debug = require('./utils/debug/debug')
 var indexRouter = require('./routes/index')
 var usersRouter = require('./routes/users')
+var postsRouter = require('./routes/posts')
+var commonRouter = require('./routes/common')
 
 var app = express()
 
@@ -36,7 +38,7 @@ app.use((err, req, res, next) => {
     // 如果token无效，返回
     res.status(401).json({
       ...responseModel.FAIL.INVALID_TOKEN,
-      msg: `${responseModel.FAIL.INVALID_TOKEN.msg}:${err.message}`,
+      msg: `${responseModel.FAIL.INVALID_TOKEN.msg}:${err.message}，from: '${req.baseUrl}'`,
     })
     return
   }
@@ -50,6 +52,38 @@ app.use((err, req, res, next) => {
 // 路由入口
 app.use('/test', indexRouter) // 测试路由
 app.use('/users', usersRouter)
+app.use('/posts', postsRouter)
+app.use('/common', commonRouter)
+
+/**
+ * 全局未捕获reject处理
+ */
+process.on('unhandledRejection', (reason, p) => {
+  // 此时只能让请求超时
+  Debug.log(reason, '未捕获的reject')
+})
+
+/**
+ * 全局未捕获错误处理
+ */
+app.use(function (err, req, res, next) {
+  if (err) {
+    let data = {}
+    if (SERVER_CONFIG.env != ENV_TYPE.RELEASE) {
+      data = {
+        err: err.message,
+        stack: err.stack,
+      }
+    }
+    res.json({
+      code: 500,
+      msg: '服务器错误',
+      data,
+    })
+    return
+  }
+  next()
+})
 
 app.listen(8088, function () {
   console.log('kod api service listen on port 8088')

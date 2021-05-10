@@ -11,6 +11,11 @@ const SERVER_CONFIG = {
   tokenSecret: 'xxxxxx',
   // 忽略token验证的路由
   tokenIgnorePath: [],
+  // 加密密钥和偏移量
+  crypto: {
+    key: 'kod_secretkey_2021_zhaocj_saxpawhqddqwpasxnwsa',
+    iv: 'bzhsiioaasnqwooascw',
+  },
   // 邮件发送配置
   smtp: {
     user: 'xxxx@xxx.com',
@@ -23,6 +28,10 @@ const SERVER_CONFIG = {
     password: 'xxx',
     database: 'xxx',
     multipleStatements: true, // 执行是否支持多语句
+  },
+  dbConfig: {
+    // 数据库不可逆加密密钥
+    encryptKey: 'xxx',
   },
   // 一些常量
   constants: {

@@ -22,7 +22,7 @@
     }).unless({
       path: ['/getToken'], //除了这个地址，其他的URL都需要验证
     })
-  )
+  );
   ```
 
   判断是否验证成功
@@ -32,11 +32,11 @@
   app.use(function (err, req, res, next) {
     if (err.name === 'UnauthorizedError') {
       //  （ 具体的err值 见下面）
-      res.status(401).send('invalid token...')
+      res.status(401).send('invalid token...');
     }
     // 如果通过
-    next()
-  })
+    next();
+  });
   ```
 
   在需要验证的路由中，如果 err 值满足这些条件，则表示验证失败
@@ -78,7 +78,7 @@
   **其实更好的方法是设置 header，而不是返回 data，app.js 里的 token 校验可以通过 header 刷新 token**
 
   ```javascript
-  var jsonwebtoken = require('jsonwebtoken')
+  var jsonwebtoken = require('jsonwebtoken');
   app.get('/getToken', function (req, res) {
     res.json({
       result: 'ok',
@@ -93,8 +93,8 @@
           expiresIn: 60 * 1, // 过期时间
         }
       ),
-    })
-  })
+    });
+  });
   ```
 
   前端（特别是非网页程序，没有 cookie，无法使用 session）需要保存 token 的值

@@ -14,7 +14,7 @@ function sendCheckCode(to, code) {
   //   <p style="color:#888888">* 30分钟内有效，如非您本人操作，请忽略</p>
   //   <p style="color:#888888">* 邮件由系统自动发送，请勿回复</p>
   //   </div>`,
-  // })
+  // });
 }
 
 function createCheckCode(len = 4, hasLetter = true) {

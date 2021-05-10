@@ -49,6 +49,14 @@ const responseModel = {
       code: 502,
       msg: '查询数据库错误',
     },
+    DB_UPDATE: {
+      code: 503,
+      msg: '更新数据库错误',
+    },
+    DB_DUPLICATE: {
+      code: 504,
+      msg: '数据重复',
+    },
   },
 }
 

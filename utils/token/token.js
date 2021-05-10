@@ -1,5 +1,5 @@
-const jsonwebtoken = require('jsonwebtoken')
-const { SERVER_CONFIG } = require('../../config/server_config')
+const jsonwebtoken = require('jsonwebtoken');
+const { SERVER_CONFIG } = require('../../config/server_config');
 /**
  * 根据数据和过期时间 返回一个token
  * @param {Object} data
@@ -9,7 +9,7 @@ const { SERVER_CONFIG } = require('../../config/server_config')
 function getToken(data, expiresIn = '5d') {
   return jsonwebtoken.sign(data, SERVER_CONFIG.tokenSecret, {
     expiresIn,
-  })
+  });
 }
 
 /**
@@ -20,10 +20,25 @@ function getToken(data, expiresIn = '5d') {
 function parseToken(token) {
   try {
     // const str = jsonwebtoken.decode(token)
-    return jsonwebtoken.verify(token, SERVER_CONFIG.tokenSecret)
+    return jsonwebtoken.verify(token, SERVER_CONFIG.tokenSecret);
   } catch (err) {
-    return null
+    return null;
   }
 }
 
-module.exports = { getToken, parseToken }
+/**
+ * 获取token信息
+ * @param req request对象
+ */
+function decodeToken(req) {
+  let tokenStr = req.headers.authorization;
+  if (!tokenStr) {
+    return null;
+  }
+  if (tokenStr.indexOf(' ') != -1) {
+    tokenStr = tokenStr.split(' ')[1];
+  }
+  return parseToken(tokenStr);
+}
+
+module.exports = { getToken, parseToken, decodeToken };
