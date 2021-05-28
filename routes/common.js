@@ -45,6 +45,8 @@ router.post('/uploadFile', (req, resp) => {
     avatar: 'avatar',
     posts: 'post_imgs',
     videos: 'videos',
+    logo: 'logo',
+    html_img: 'html_img',
   };
   const filePath = path.join(__dirname, `../public/${dirs[type]}/`);
   let form = new formidable.IncomingForm();
@@ -58,11 +60,12 @@ router.post('/uploadFile', (req, resp) => {
       return;
     }
     let fileName = files.file.path;
+    const { id } = decodeToken(req);
+    const { localFile } = fileds;
     // -- 针对不同文件进行不同处理
     switch (type) {
       case dirs.avatar:
         // 头像 将原有头像删除 新头像增加后缀 强制前端不使用缓存
-        const { id } = decodeToken(req);
         let foldName = filePath + oldName;
         fileName = `${filePath}avatar_${id}_${createCheckCode(4)}.jpg`;
         if (fs.existsSync(foldName) && foldName !== 'default.png') {
@@ -75,6 +78,16 @@ router.post('/uploadFile', (req, resp) => {
         // 视频 后端进行裁剪和封面提取
         videoPostHanlder(fileName, start, end, poster);
         break;
+      case dirs.logo:
+        let oldFile = filePath + oldName;
+        if (fs.existsSync(oldFile) && oldName != '') {
+          fs.rmSync(oldFile);
+        }
+
+        fileName = `${filePath}organ_${id}_${createCheckCode(4)}.jpg`;
+
+        fs.renameSync(files.file.path, fileName);
+        break;
     }
 
     resp.json({
@@ -83,6 +96,7 @@ router.post('/uploadFile', (req, resp) => {
       data: {
         // file 这个键名来自前端设置
         path: path.basename(fileName),
+        localFile,
       },
     });
   });

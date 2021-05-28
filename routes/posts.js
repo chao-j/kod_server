@@ -51,7 +51,7 @@ router.post('/getContent', async function (req, res) {
 
 // 对内容或评论进行评论
 router.post('/addComment', async function (req, res) {
-  const { cid, target, content } = req.body;
+  const { cid, target = -1, content } = req.body;
   const userInfo = decodeToken(req);
   if (!userInfo) {
     res.json({ ...responseModel.FAIL.INVALID_TOKEN, msg: '未登录' });

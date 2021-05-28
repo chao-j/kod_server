@@ -1,7 +1,12 @@
 const mysql = require('mysql');
-const { SERVER_CONFIG } = require('../../config/server_config');
+const { SERVER_CONFIG, ENV_TYPE } = require('../../config/server_config');
 
-const pool = mysql.createPool(SERVER_CONFIG.database);
+const dbConfigMap = {
+  [ENV_TYPE.DEVELOP]: SERVER_CONFIG.database,
+  [ENV_TYPE.TEST]: SERVER_CONFIG.database_test,
+};
+
+const pool = mysql.createPool(dbConfigMap[SERVER_CONFIG.env]);
 
 function query(sql, params) {
   return new Promise((resolve, resject) => {

@@ -1,18 +1,18 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 const Jwt = require('express-jwt');
 
 const { SERVER_CONFIG, ENV_TYPE } = require('./config/server_config');
 const responseModel = require('./utils/responseModel');
 const Debug = require('./utils/debug/debug');
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var postsRouter = require('./routes/posts');
-var commonRouter = require('./routes/common');
-
-var app = express();
+const indexRouter = require('./routes/index');
+const usersRouter = require('./routes/users');
+const postsRouter = require('./routes/posts');
+const commonRouter = require('./routes/common');
+const organRouter = require('./routes/organ');
+const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -46,7 +46,7 @@ app.all('*', function (req, res, next) {
 // token 校验 在所有路由之前
 app.use((err, req, res, next) => {
   if (err.name === 'UnauthorizedError') {
-    Debug.log(err, 'token错误: ');
+    Debug.log(err, 'token错误: ' + req.path);
     // 如果token无效，返回
     res.status(401).json({
       ...responseModel.FAIL.INVALID_TOKEN,
@@ -66,7 +66,7 @@ app.use('/test', indexRouter); // 测试路由
 app.use('/users', usersRouter);
 app.use('/posts', postsRouter);
 app.use('/common', commonRouter);
-
+app.use('/organ', organRouter);
 /**
  * 全局未捕获reject处理
  */

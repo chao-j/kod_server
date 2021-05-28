@@ -3,6 +3,7 @@ const jsonwebtoken = require('jsonwebtoken');
 const { SERVER_CONFIG } = require('../config/server_config');
 const responseModel = require('../utils/responseModel');
 const { getToken, parseToken, decodeToken } = require('../utils/token/token');
+const qr = require('qr-image');
 var router = express.Router();
 /* GET home page. */
 router.get('/', function (req, res, next) {
@@ -55,4 +56,17 @@ router.post('/checkToken', (req, res) => {
   console.log(decodeToken(req));
   res.json({ ...responseModel.SUCCESS.SUC_OK });
 });
+
+// 测试二维码
+router.get('/getQR', (req, res) => {
+  var code = qr.image('No authorization token was found', { type: 'png' });
+  res.setHeader('Content-type', 'image/png'); //sent qr image to client side
+  code.pipe(res);
+});
+
+// 一个GET请求的例子
+router.get('/hello', (req, res) => {
+  res.send('Hello World');
+});
+
 module.exports = router;
