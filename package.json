@@ -7,6 +7,7 @@
     "devTool": "node ./developTool.js"
   },
   "dependencies": {
+    "@hyoga/uni-socket.io": "^3.0.4",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "express": "~4.16.1",
@@ -17,7 +18,8 @@
     "mysql": "^2.18.1",
     "nodemailer": "^6.5.0",
     "nodemailer-smtp-transport": "^2.7.4",
-    "qr-image": "^3.2.0"
+    "qr-image": "^3.2.0",
+    "socket.io": "^2.3.0"
   },
   "devDependencies": {
     "crypto-js": "^4.0.0",

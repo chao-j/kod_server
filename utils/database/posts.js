@@ -27,10 +27,31 @@ async function insertVideo({ url, title, desc, tags, id }) {
   return responseModel.SUCCESS.SUC_OK;
 }
 
-// 获取用户内容列表
-async function getContent({ id, start, len }) {
-  const sql = 'select * from v_contents ' + (id ? 'where uc_id = ?' : 'limit ?,?');
-  const { res, err } = await db.query(sql, id ? [id] : [Number(start), Number(len)]);
+async function deleteContent(cids) {
+  const sql = 'delete from t_content where c_id in (?);';
+  const { res, err } = await db.query(sql, cids.join(','));
+  if (err) {
+    return responseModel.ERROR.DB_UPDATE;
+  }
+  return responseModel.SUCCESS.SUC_OK;
+}
+
+// 获取内容列表
+async function getContent({ id, start, len, contentID }) {
+  let sql, result;
+  console.log(contentID);
+  if (contentID == undefined) {
+    // 获取全部列表 或者 指定用户列表
+    sql = 'select * from v_contents ' + (id ? 'where uc_id = ?' : '') + ' limit ?,?';
+    result = await db.query(sql, id ? [id, Number(start), Number(len)] : [Number(start), Number(len)]);
+  } else {
+    // 获取指定内容
+    sql = 'select * from v_contents where c_id = ?';
+    result = await db.query(sql, [contentID]);
+  }
+
+  const { res, err } = result;
+
   if (err) {
     console.log(err);
     return responseModel.ERROR.DB_QUERY;
@@ -38,12 +59,14 @@ async function getContent({ id, start, len }) {
   const contents = [];
   res.forEach((item, index) => {
     const ct = {
-      id: index,
       uid: item.uc_id,
       nickname: item.ui_nickname,
       gender: item.ui_gender,
       avatar: item.ui_avatar,
       dance_type: item.ui_dance_type,
+      dance_age: item.ui_dance_age,
+      birth: item.ui_birth,
+      city: item.ui_city,
       cid: item.c_id,
       type: item.c_type,
       title: item.c_title,
@@ -63,9 +86,9 @@ async function getContent({ id, start, len }) {
   return { ...responseModel.SUCCESS.SUC_OK_DATA, data: contents };
 }
 // 发布一条评论
-async function addComment(userId, contentId, targetId, content) {
-  const sql = 'insert into t_comment(c_id, uc_id, tc_target, tc_content, tc_date)values(?,?,?,?,?)';
-  const params = [contentId, userId, targetId, content, new Date()];
+async function addComment(userId, contentId, targetId, toID, content) {
+  const sql = 'insert into t_comment(c_id, uc_id, tc_target, tc_to, tc_content, tc_date)values(?,?,?,?,?,?)';
+  const params = [contentId, userId, targetId, toID, content, new Date()];
   const { res, err } = await db.query(sql, params);
   if (err) {
     console.log(err);
@@ -114,10 +137,12 @@ async function getCommentByID(id) {
   return { ...responseModel.SUCCESS.SUC_OK_DATA, data: comments };
 }
 
-function syncComment(cids, state) {
-  const sql = `update t_comment set tc_status = ? where tc_id in (?)`;
-  const params = [state, cids.join(',')];
-  const { res, err } = db.query(sql, params);
+async function syncComment(cids, state) {
+  const params = [state];
+  const sql = `update t_comment set tc_status = ? where tc_id in (${cids.join(',')})`;
+
+  console.log(params);
+  const { res, err } = await db.query(sql, params);
   if (err) {
     console.log(err);
     return { ...responseModel.ERROR.DB_UPDATE, msg: '同步评论失败' };
@@ -125,4 +150,37 @@ function syncComment(cids, state) {
   return responseModel.SUCCESS.SUC_OK;
 }
 
-module.exports = { insertPost, insertVideo, getContent, addComment, getCommentByID, syncComment };
+// 获取指定账号未读评论
+async function getUnreadComment(uid) {
+  const sql =
+    'select c.*, u.ui_nickname, u.ui_avatar from t_comment as c, t_user_info as u where tc_to = ? and tc_status = 0 and c.uc_id = u.uc_id and c.tc_to != c.uc_id order by tc_date desc';
+  const { err, res } = await db.query(sql, [uid]);
+  if (err) {
+    return {};
+  }
+  const comments = {};
+  res.forEach((item) => {
+    comments[item.tc_id] = {
+      commentID: item.tc_id,
+      contentID: item.c_id,
+      uid: item.uc_id,
+      content: item.tc_content,
+      date: item.tc_date,
+      nickname: item.ui_nickname,
+      avatar: item.ui_avatar,
+      target: item.tc_target,
+    };
+  });
+  return comments;
+}
+
+module.exports = {
+  insertPost,
+  insertVideo,
+  getContent,
+  addComment,
+  getCommentByID,
+  syncComment,
+  deleteContent,
+  getUnreadComment,
+};

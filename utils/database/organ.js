@@ -45,22 +45,26 @@ async function getOrganInfo({ uid, oid, isOwner }) {
     sql = 'select * from t_organ where o_id = ?';
   }
   const { res, err } = await db.query(sql, [isOwner ? uid : oid]);
-  if (isOwner) {
-    oid = res[0].o_id;
-  }
-  const ctSql = 'select * from t_activity where o_id = ?';
-  const { res: ctRes, err: ctErr } = await db.query(ctSql, [oid]);
   const activies = [];
-  ctRes.forEach((item) => {
-    activies.push({
-      aid: item.a_id,
-      oid: item.o_id,
-      summary: item.a_summary,
+  if (res.length == 1) {
+    if (isOwner) {
+      oid = res[0].o_id;
+    }
+    const ctSql = 'select * from t_activity where o_id = ?';
+    const { res: ctRes, err: ctErr } = await db.query(ctSql, [oid]);
+    console.log(ctRes);
+    ctRes.forEach((item) => {
+      activies.push({
+        aid: item.a_id,
+        oid: item.o_id,
+        summary: item.a_summary,
+      });
     });
-  });
-  if (err || ctErr) {
-    return responseModel.ERROR.DB_QUERY;
+    if (err || ctErr) {
+      return responseModel.ERROR.DB_QUERY;
+    }
   }
+
   if (res.length == 1) {
     return {
       ...responseModel.SUCCESS.SUC_OK_DATA,
@@ -96,13 +100,14 @@ async function getActicityPage(id) {
 
 // 发布活动
 async function addActivity(uid, summary, html) {
-  const sql = 'insert into t_activity(o_id, a_summary, a_content, a_date) select o_id,?,? from t_organ where uc_id = ?';
-  const params = [summary, html, uid, new Date()];
+  const sql = `insert into t_activity(o_id, a_summary, a_content, a_date) select o_id,?,?,? from t_organ where uc_id = ?`;
+  const params = [summary, html, new Date(), uid];
   const { res, err } = await db.query(sql, params);
   if (err) {
     console.log(err);
     return responseModel.ERROR.DB_INSERT;
   }
+
   return responseModel.SUCCESS.SUC_OK;
 }
 

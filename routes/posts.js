@@ -5,6 +5,7 @@ var path = require('path');
 const responseModel = require('../utils/responseModel');
 const { decodeToken, getToken } = require('../utils/token/token');
 const PostDB = require('../utils/database/posts');
+const SocketUtil = require('../utils/socketUtil');
 
 // 发布帖子
 router.post('/addPost', async function (req, res) {
@@ -45,19 +46,26 @@ router.post('/getUserContent', async function (req, res) {
 
 // 获取动态内容
 router.post('/getContent', async function (req, res) {
-  const { start, len } = req.body;
-  res.json(await PostDB.getContent({ id: undefined, start, len }));
+  const { start, len, uid, contentID } = req.body;
+  res.json(await PostDB.getContent({ id: uid, start, len, contentID }));
+});
+
+// 删除动态
+router.post('/deleteContent', async function (req, res) {
+  const { cids } = req.body;
+  res.json(await PostDB.deleteContent(cids));
 });
 
 // 对内容或评论进行评论
 router.post('/addComment', async function (req, res) {
-  const { cid, target = -1, content } = req.body;
+  const { cid, target = -1, content, toUser } = req.body;
   const userInfo = decodeToken(req);
   if (!userInfo) {
     res.json({ ...responseModel.FAIL.INVALID_TOKEN, msg: '未登录' });
     return;
   }
-  res.json(await PostDB.addComment(userInfo.id, cid, target, content));
+  SocketUtil.sendCommentMsg(toUser);
+  res.json(await PostDB.addComment(userInfo.id, cid, target, toUser, content));
 });
 
 // 获取指定动态的评论

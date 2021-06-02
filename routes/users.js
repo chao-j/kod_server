@@ -149,4 +149,23 @@ router.post('/setUserInfo', async (req, resp) => {
     });
 });
 
+router.post('/getUserInfo', async (req, res) => {
+  const { id, count } = req.body;
+  res.json(await UserDB.getUserInfo({ id, count }));
+});
+
+router.post('/getUnreadMsg', async (req, res) => {
+  const { id } = decodeToken(req);
+  if (!id) {
+    res.json({ ...responseModel.FAIL.INVALID_TOKEN, msg: '未登录' });
+    return;
+  }
+  res.json(await UserDB.getUnreadMsg(id));
+});
+
+router.post('/syncMsgStatus', (req, res) => {
+  const { ids } = req.body;
+  UserDB.syncMsgStatus(ids);
+});
+
 module.exports = router;

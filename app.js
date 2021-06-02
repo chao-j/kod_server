@@ -7,6 +7,8 @@ const Jwt = require('express-jwt');
 const { SERVER_CONFIG, ENV_TYPE } = require('./config/server_config');
 const responseModel = require('./utils/responseModel');
 const Debug = require('./utils/debug/debug');
+const { startSocket } = require('./utils/socketUtil');
+
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const postsRouter = require('./routes/posts');
@@ -97,8 +99,11 @@ app.use(function (err, req, res, next) {
   next();
 });
 
-app.listen(8088, function () {
+const server = app.listen(8088, function () {
   console.log('kod api service listen on 8088');
 });
 
+// socket
+const io = require('socket.io').listen(server);
+startSocket(io);
 module.exports = app;
